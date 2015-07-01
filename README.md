@@ -10,3 +10,6 @@ Kaggle.com - Model quoted prices for industrial tube assemblies [Competition Lin
   ```
 1. Install RStudio
   [http://www.rstudio.com/products/rstudio/download/](http://www.rstudio.com/products/rstudio/download/)
+
+## CAT ERD
+![erd](Data/CAT_ERD.png)
