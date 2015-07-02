@@ -55,17 +55,24 @@ merged_train$num_boss <- as.numeric(merged_train$num_boss)
 merged_test$num_bends <- as.numeric(merged_test$num_bends)
 merged_test$num_boss <- as.numeric(merged_test$num_boss)
 
+# factorize material
+materials <- factor(unique(c(as.character(merged_train$material_id), as.character(merged_test$material_id))))
+merged_train$material_id <- factor(merged_train$material_id, levels=materials)
+merged_test$material_id <- factor(merged_test$material_id, levels=materials)
+merged_train[is.na(merged_train$material_id),]$material_id <- 'SP-0008'
+merged_test[is.na(merged_test$material_id),]$material_id <- 'SP-0008'
+
 #remove more columns
-merged_train <- subset(merged_train, select = -c(end_a, end_x, material_id))
-merged_test <- subset(merged_test, select = -c(end_a, end_x, material_id))
+merged_train <- subset(merged_train, select = -c(end_a, end_x))
+merged_test <- subset(merged_test, select = -c(end_a, end_x))
 
 # Fit a RF model
 fitRF = randomForest(cost ~.  , data = merged_train, ntree=500, do.trace=50, importance=TRUE)
 
 # get predictions from the model, convert them and dump them!
-# Change any below 0 to zero.
 preds <- cbind(1:NROW(merged_test), predict(fitRF, merged_test))
 
 colnames(preds) <- c('id', 'cost')
 
-write.csv(preds, 'Output/merged_data_rf_model.csv', quote = FALSE, row.names = FALSE)
+write.csv(preds, 'Output/merged_data_rf_model_with_material_ids.csv', quote = FALSE, row.names = FALSE)
+          
