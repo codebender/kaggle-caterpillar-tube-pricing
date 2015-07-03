@@ -1,6 +1,6 @@
 #load dependencies
 library(lubridate)
-library(randomForest)
+library(party)
 
 train = read.csv('Data/train_set.csv', stringsAsFactors = FALSE)
 test = read.csv('Data/test_set.csv', stringsAsFactors = FALSE)
@@ -59,19 +59,17 @@ merged_test$num_boss <- as.numeric(merged_test$num_boss)
 materials <- factor(unique(c(as.character(merged_train$material_id), as.character(merged_test$material_id))))
 merged_train$material_id <- factor(merged_train$material_id, levels=materials)
 merged_test$material_id <- factor(merged_test$material_id, levels=materials)
-merged_train[is.na(merged_train$material_id),]$material_id <- 'SP-0008'
-merged_test[is.na(merged_test$material_id),]$material_id <- 'SP-0008'
 
 #remove more columns
 merged_train <- subset(merged_train, select = -c(end_a, end_x))
 merged_test <- subset(merged_test, select = -c(end_a, end_x))
 
 # Fit a RF model
-fitRF = randomForest(cost ~.  , data = merged_train, ntree=500, do.trace=50, importance=TRUE)
+fitCF = cforest(cost ~.  , data = merged_train, controls=cforest_unbiased(trace=TRUE))
 
 # get predictions from the model, convert them and dump them!
-preds <- cbind(1:NROW(merged_test), predict(fitRF, merged_test))
+preds <- cbind(1:NROW(merged_test), predict(fitCF, merged_test, OOB=TRUE))
 
 colnames(preds) <- c('id', 'cost')
 
-write.csv(preds, 'Output/merged_data_rf_model_with_material_ids.csv', quote = FALSE, row.names = FALSE)
+write.csv(preds, 'Output/cforest_model.csv', quote = FALSE, row.names = FALSE)
