@@ -45,7 +45,7 @@ for(i in 1:ncol(train)){
   if(!is.numeric(train[,i])){
     freq = data.frame(table(train[,i]))
     freq = freq[order(freq$Freq, decreasing = TRUE),]
-    train[,i] = as.character(match(train[,i], freq$Var1[1:30]))
+    train[,i] = as.character(match(train[,i], freq$Var1[1:50]))
     train[is.na(train[,i]),i] = "rareValue"
     train[,i] = as.factor(train[,i])
   }
@@ -79,11 +79,11 @@ library(randomForest)
 # sqrt(mean((log(dtest_cv$cost + 1) - log(pred + 1))^2)) # 0.2410004
 
 ### Train randomForest on the whole training set
-rf = randomForest(log(train$cost + 1)~., train[,-match(c("id", "cost"), names(train))], ntree = 50, do.trace = 2)
+rf = randomForest(log(train$cost + 1)~., train[,-match(c("id", "cost"), names(train))], ntree = 100, do.trace = 2)
 
 pred = exp(predict(rf, test)) - 1
 
 submitDb = data.frame(id = test$id, cost = pred)
 submitDb = aggregate(data.frame(cost = submitDb$cost), by = list(id = submitDb$id), mean)
 
-write.csv(submitDb, "Output/rf_log_transform_model.csv", row.names = FALSE, quote = FALSE)
+write.csv(submitDb, "Output/rf_log_transform_model_100.csv", row.names = FALSE, quote = FALSE)
