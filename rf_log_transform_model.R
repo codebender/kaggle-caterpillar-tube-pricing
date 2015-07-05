@@ -15,6 +15,9 @@ train = read.csv("Data/train_set.csv")
 train$id = -(1:nrow(train))
 test$cost = 0
 
+# shuffle training set
+train <- train[sample(nrow(train)),]
+
 train = rbind(train, test)
 
 # quote date
@@ -96,4 +99,4 @@ pred = exp(predict(rf, test)) - 1
 submitDb = data.frame(id = test$id, cost = pred)
 submitDb = aggregate(data.frame(cost = submitDb$cost), by = list(id = submitDb$id), mean)
 
-write.csv(submitDb, "Output/rf_log_transform_model_with_dates.csv", row.names = FALSE, quote = FALSE)
+write.csv(submitDb, "Output/rf_log_transform_model_with_shuffle.csv", row.names = FALSE, quote = FALSE)
