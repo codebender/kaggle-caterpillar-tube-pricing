@@ -1,3 +1,6 @@
+#load dependencies
+library(lubridate)
+library(randomForest)
 
 options(scipen = 10)
 
@@ -13,6 +16,14 @@ train$id = -(1:nrow(train))
 test$cost = 0
 
 train = rbind(train, test)
+
+# quote date
+train$quote_date <- as.Date(train$quote_date)
+train$year <- year(train$quote_date)
+train$month <- month(train$quote_date)
+train$week <- week(train$quote_date)
+
+train$quote_date <- NULL
 
 ### Merge datasets if only 1 variable in common
 continueLoop = TRUE
@@ -59,7 +70,6 @@ train = train[which(train$id < 0),]
 ###
 
 ### Randomforest
-library(randomForest)
 
 # dtrain_cv = train[which(train$id %% 5 > 0),]
 # dtest_cv = train[which(train$id %% 5 == 0),]
@@ -86,4 +96,4 @@ pred = exp(predict(rf, test)) - 1
 submitDb = data.frame(id = test$id, cost = pred)
 submitDb = aggregate(data.frame(cost = submitDb$cost), by = list(id = submitDb$id), mean)
 
-write.csv(submitDb, "Output/rf_log_transform_model_100.csv", row.names = FALSE, quote = FALSE)
+write.csv(submitDb, "Output/rf_log_transform_model_with_dates.csv", row.names = FALSE, quote = FALSE)
