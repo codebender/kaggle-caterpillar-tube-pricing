@@ -17,38 +17,49 @@ test$cost = 0
 
 train = rbind(train, test)
 
-# quote date
+### Quote Date
 train$quote_date <- as.Date(train$quote_date)
 train$year <- year(train$quote_date)
 train$month <- month(train$quote_date)
 train$week <- week(train$quote_date)
-
 train$quote_date <- NULL
 
 ### Merge datasets if only 1 variable in common
-continueLoop = TRUE
-while(continueLoop){
-  continueLoop = FALSE
-  for(f in dir("./Data/", '*.csv')){
-    d = read.csv(paste0("./Data/", f))
-    names(d) <- gsub("name", paste("name", sub('.csv', '', f), sep = '_'), names(d))
-    names(d) <- gsub("length", paste("length", sub('.csv', '', f), sep = '_'), names(d))
-    names(d) <- gsub("weight", paste("weight", sub('.csv', '', f), sep = '_'), names(d))
-    names(d) <- gsub("diameter", paste("diameter", sub('.csv', '', f), sep = '_'), names(d))
-    commonVariables = intersect(names(train), names(d))
-    if(length(commonVariables) == 1){
-      print('MERGING~~~')
-      print(f)
-      print(commonVariables)
-      train = merge(train, d, by = commonVariables, all.x = TRUE)
-      continueLoop = TRUE
-      print(dim(train))
-    }
-    else {
+tube = read.csv("Data/tube.csv")
+train = merge(train, tube, by = c("tube_assembly_id"), all.x = TRUE)
 
-    }
+tube_end_form = read.csv("Data/tube_end_form.csv")
+train = merge(train, tube_end_form, by.x = c("end_a"), by.y = c("end_form_id"), all.x = TRUE)
+train = merge(train, tube_end_form, by.x = c("end_x"), by.y = c("end_form_id"), all.x = TRUE)
+
+specs = read.csv("Data/specs.csv")
+train = merge(train, specs, by = c("tube_assembly_id"), all.x = TRUE)
+
+bill_of_materials = read.csv("Data/bill_of_materials.csv")
+train = merge(train, bill_of_materials, by = c("tube_assembly_id"), all.x = TRUE)
+
+rbind.all.columns <- function(x, y) {
+  if(length(x) == 0) {
+    return(y)
   }
+  
+  x.diff <- setdiff(colnames(x), colnames(y))
+  y.diff <- setdiff(colnames(y), colnames(x))
+  
+  x[, c(as.character(y.diff))] <- NA
+  y[, c(as.character(x.diff))] <- NA
+  
+  return(rbind(x, y))
 }
+
+all_components <- data.frame()
+for(f in dir("./Data/", 'comp_.*\\.csv')) {
+  print(f)
+  comp <- read.csv(paste0("./Data/", f))
+  all_components <- rbind.all.columns(all_components, comp)
+}
+
+train = merge(train, all_components, by.x = c("component_id_1"), by.y = c("component_id"), all.x = TRUE)
 
 ### Clean NA values
 # radius of 9999 is unknown
