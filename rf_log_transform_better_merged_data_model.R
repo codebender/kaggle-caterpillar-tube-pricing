@@ -31,11 +31,21 @@ while(continueLoop){
   continueLoop = FALSE
   for(f in dir("./Data/", '*.csv')){
     d = read.csv(paste0("./Data/", f))
+    names(d) <- gsub("name", paste("name", sub('.csv', '', f), sep = '_'), names(d))
+    names(d) <- gsub("length", paste("length", sub('.csv', '', f), sep = '_'), names(d))
+    names(d) <- gsub("weight", paste("weight", sub('.csv', '', f), sep = '_'), names(d))
+    names(d) <- gsub("diameter", paste("diameter", sub('.csv', '', f), sep = '_'), names(d))
     commonVariables = intersect(names(train), names(d))
     if(length(commonVariables) == 1){
+      print('MERGING~~~')
+      print(f)
+      print(commonVariables)
       train = merge(train, d, by = commonVariables, all.x = TRUE)
       continueLoop = TRUE
       print(dim(train))
+    }
+    else {
+
     }
   }
 }
@@ -43,7 +53,7 @@ while(continueLoop){
 ### Clean NA values
 # radius of 9999 is unknown
 # https://www.kaggle.com/c/caterpillar-tube-pricing/forums/t/15001/ta-04114/83231#post83231
-#train$bend_radius[train$bend_radius == 9999] = mean(train$bend_radius[train$bend_radius != 9999])
+# train$bend_radius[train$bend_radius == 9999] = mean(train$bend_radius[train$bend_radius != 9999])
 
 for(i in 1:ncol(train)){
   if(is.numeric(train[,i])){
@@ -100,4 +110,4 @@ pred = exp(predict(rf, test)) - 1
 submitDb = data.frame(id = test$id, cost = pred)
 submitDb = aggregate(data.frame(cost = submitDb$cost), by = list(id = submitDb$id), mean)
 
-write.csv(submitDb, "Output/rf_log_transform_model_with_50_features.csv", row.names = FALSE, quote = FALSE)
+write.csv(submitDb, "Output/rf_log_transform_better_data_1.csv", row.names = FALSE, quote = FALSE)
