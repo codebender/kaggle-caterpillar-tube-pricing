@@ -9,8 +9,8 @@ options(scipen = 10)
 ###
 
 ### Load train and test
-test = read.csv("Data/competition_data/test_set.csv")
-train = read.csv("Data/competition_data/train_set.csv")
+test = read.csv("Data/test_set.csv")
+train = read.csv("Data/train_set.csv")
 
 train$id = -(1:nrow(train))
 test$cost = 0
@@ -25,17 +25,17 @@ train$month <- month(train$quote_date)
 train$quote_date <- NULL
 
 ### Merge datasets if only 1 variable in common
-tube = read.csv("Data/competition_data/tube.csv")
+tube = read.csv("Data/tube.csv")
 train = merge(train, tube, by = c("tube_assembly_id"), all.x = TRUE)
 
-tube_end_form = read.csv("Data/competition_data/tube_end_form.csv")
+tube_end_form = read.csv("Data/tube_end_form.csv")
 train = merge(train, tube_end_form, by.x = c("end_a"), by.y = c("end_form_id"), all.x = TRUE)
 train = merge(train, tube_end_form, by.x = c("end_x"), by.y = c("end_form_id"), all.x = TRUE)
 
-specs = read.csv("Data/competition_data/specs.csv")
+specs = read.csv("Data/specs.csv")
 train = merge(train, specs, by = c("tube_assembly_id"), all.x = TRUE)
 
-bill_of_materials = read.csv("Data/competition_data/bill_of_materials.csv")
+bill_of_materials = read.csv("Data/bill_of_materials.csv")
 train = merge(train, bill_of_materials, by = c("tube_assembly_id"), all.x = TRUE)
 
 rbind.all.columns <- function(x, y) {
@@ -53,7 +53,7 @@ rbind.all.columns <- function(x, y) {
 }
 
 all_components <- data.frame()
-for(f in dir("./Data/competition_data/", 'comp_.*\\.csv')) {
+for(f in dir("./Data/", 'comp_.*\\.csv')) {
   print(f)
   comp <- read.csv(paste0("./Data/", f))
   all_components <- rbind.all.columns(all_components, comp)
@@ -136,4 +136,4 @@ pred = exp(predict(rf, test)) - 1
 submitDb = data.frame(id = test$id, cost = pred)
 submitDb = aggregate(data.frame(cost = submitDb$cost), by = list(id = submitDb$id), mean)
 
-write.csv(submitDb, "Output/rf_log_transform_better_data_4.csv", row.names = FALSE, quote = FALSE)
+write.csv(submitDb, "Output/rf_log_transform_better_data_5.csv", row.names = FALSE, quote = FALSE)
